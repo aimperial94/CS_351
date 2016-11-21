@@ -1,0 +1,10 @@
+http://speedtest.wdc01.softlayer.com/downloads/test100.zip
+http://speedtest.sjc01.softlayer.com/downloads/test100.zip
+http://speedtest.sea01.softlayer.com/downloads/test100.zip
+http://speedtest.sng01.softlayer.com/downloads/test100.zip
+http://mirror.leaseweb.com/speedtest/100mb.bin
+http://speedtest.london.linode.com/100MB-london.bin
+http://ftp.i3d.net/100mb.bin
+http://www.skilledtester.de/100mb.bin
+http://speedtest.dal05.softlayer.com/downloads/test100.zip
+http://cachefly.cachefly.net/100mb.test
