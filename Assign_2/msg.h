@@ -18,13 +18,13 @@
  * to be transfered to the receiver.
  */
 struct fileNameMsg
-{	
+{
 	/* The message type */
-	long mtype;	
-	
+	long mtype;
+
 	/* The name of the file */
 	char fileName[MAX_FILE_NAME_SIZE];
-	
+
 	/**
  	 * Prints the structure
  	 * @param fp - the file stream to print to
@@ -38,18 +38,18 @@ struct fileNameMsg
 /**
  * The message structure representing the message
  * sent from the sender to the receiver indicating
- * the number of bytes in the shared memory segment 
- * that are ready to read. 
+ * the number of bytes in the shared memory segment
+ * that are ready to read.
  */
 
 struct message
 {
 	/* The message type */
 	long mtype;
-	
+
 	/* How many bytes in the message */
 	int size;
-	
+
 	/**
  	 * Prints the structure
  	 * @param fp - the file stream to print to
@@ -68,12 +68,12 @@ struct ackMessage
 {
 	/* The type of message */
 	long mtype;
-	
+
 	/**
  	 * Prints the structure
  	 * @param fp - the file stream to print to
  	 */
-	
+
 	void print(FILE* fp)
 	{
 		fprintf(fp, "%ld\n", mtype);
