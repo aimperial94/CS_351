@@ -58,12 +58,9 @@ void init(int& shmid, int& msqid, void*& sharedMemPtr)
 		exit(-1);
 	}
 
-    /* TODO: Attach to the message queue */
-    //MIG: Please do not forget to error-check the return value of the system call.
-    if((msqid = msgget(key, S_IRUSR | S_IWUSR)) < 0){
-		perror("msgget");
-		exit(-1);
-	}
+	// Get your friends pid
+	pid_t recPID;
+	strcpy(sharedMemPtr, (char)recPID, 5);
 	
 }
 

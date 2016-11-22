@@ -16,6 +16,7 @@ using namespace std;
 
 /* The ids for the shared memory segment and the message queue */
 int shmid, msqid;
+bool wait = true;
 
 /* The pointer to the shared memory */
 void *sharedMemPtr = NULL;
@@ -37,13 +38,12 @@ string recvFileName()
 
     /* TODO: Receive the file name using msgrcv() */
     if(msgrcv(msqid, &fNameMsg, sizeof(fileNameMsg) - sizeof(long), FILE_NAME_TRANSFER_TYPE, 0) < 0){
-        perror("msgrcv");
+        perror("recvFileName->msgrcv");
         exit(-1);
     }
     
     /* TODO: return the received file name */
     fileName = fNameMsg.fileName;
-    cout << "fNameMsg: " << fNameMsg.fileName << endl;
     
     return fileName;
 }
@@ -75,14 +75,24 @@ void init(int& shmid, int& msqid, void*& sharedMemPtr)
     
     /* TODO: Store the IDs and the pointer to the shared memory region in the corresponding parameters */
     /* TODO: Allocate a shared memory segment. The size of the segment must be SHARED_MEMORY_CHUNK_SIZE. */
-    shmid = shmget(key, SHARED_MEMORY_CHUNK_SIZE, S_IWUSR | S_IRUSR | IPC_CREAT);
+	//MIG: Please do not forget to error-check the system calls. 
+	if((shmid = shmget(key, SHARED_MEMORY_CHUNK_SIZE, S_IWUSR | S_IRUSR | IPC_CREAT)) < 0){
+		perror("shmget");
+		exit(-1);
+	}
     
     /* TODO: Attach to the shared memory */
-    sharedMemPtr = (char*)shmat(shmid, NULL, 0);
+    //MIG: Please do not forget to error-check the system calls. 
+    if((sharedMemPtr = (char*)shmat(shmid, NULL, 0)) < 0){
+		perror("shmat");
+		exit(-1);
+	}
     
-    /* TODO: Create a message queue */
-    msqid = msgget(key, S_IRUSR | S_IWUSR | IPC_CREAT);
-    
+	// Put your pid into the shared memory and wait for someone to signal you.
+	pid_t pid = getpid();
+	sprintf((char*)sharedMemPtr,"%d", pid);
+	while(wait);
+
 }
  
 
@@ -104,7 +114,6 @@ unsigned long mainLoop(const char* fileName)
     
     /* TODO: append __recv to the end of file name */
     recvFileNameStr += "__recv";
-    cout << "recvFName: " << recvFileNameStr << endl;
     
     /* Open the file for writing */
     FILE* fp = fopen(recvFileNameStr.c_str(), "w");
@@ -135,8 +144,8 @@ unsigned long mainLoop(const char* fileName)
          * file is song.mp3, the name of the received file is going to be song.mp3__recv.
          */
         message dataMsg;
-        if(msgrcv(msqid, &dataMsg, sizeof(message) - sizeof(long), 1, 0) < 0){
-            perror("msgrcv");
+        if(msgrcv(msqid, &dataMsg, sizeof(message) - sizeof(long), SENDER_DATA_TYPE, 0) < 0){
+            perror("mainLoop->msgrcv");
             exit(-1);
         }
         
@@ -159,7 +168,7 @@ unsigned long mainLoop(const char* fileName)
              * of type ackMessage with mtype field set to RECV_DONE_TYPE. 
              */
             ackMessage doneMsg = {RECV_DONE_TYPE};
-            if(msgsnd(msqid, &doneMsg, sizeof(ackMessage) - sizeof(long), 2)){
+            if(msgsnd(msqid, &doneMsg, sizeof(ackMessage) - sizeof(long), 2) < 0){
                 perror("sndmsg");
                 exit(-1);
             }
@@ -207,6 +216,16 @@ void ctrlCSignal(int signal)
     cleanUp(shmid, msqid, sharedMemPtr);
 }
 
+void readSignal(int signal)
+{
+	// Read
+}
+
+void writeSignal(int signal)
+{
+	// Write
+}
+
 int main(int argc, char** argv)
 {
 	
@@ -216,6 +235,8 @@ int main(int argc, char** argv)
      * the cleaning functionality in ctrlCSignal().
      */
     signal(SIGINT, ctrlCSignal);
+	signal(SIGUSR1, readSignal);
+	signal(SIGUSR2, writeSignal);
                             
     /* Initialize */
     init(shmid, msqid, sharedMemPtr);
